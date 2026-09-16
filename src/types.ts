@@ -30,7 +30,7 @@ export interface FileAttachment {
   dataUrl: string;
 }
 
-export type SubmissionStatus = 'not_started' | 'submitted' | 'reviewed' | 'returned';
+export type SubmissionStatus = 'submitted' | 'reviewed' | 'returned';
 
 export interface Submission {
   id: string;
@@ -52,3 +52,35 @@ export interface AppData {
   assignments: Assignment[];
   submissions: Submission[];
 }
+
+export interface Toast {
+  id: string;
+  type: 'success' | 'error' | 'info';
+  message: string;
+}
+
+export const SUBJECTS = [
+  'Математика', 'Русский язык', 'Литература', 'Физика', 'Химия',
+  'Биология', 'История', 'Информатика', 'Английский язык', 'География',
+  'Обществознание', 'Музыка', 'ИЗО', 'Технология',
+];
+
+export const SUBJECT_ICONS: Record<string, string> = {
+  'Математика': '📐',
+  'Русский язык': '✍️',
+  'Литература': '📖',
+  'Физика': '⚛️',
+  'Химия': '🧪',
+  'Биология': '🧬',
+  'История': '🏛️',
+  'Информатика': '💻',
+  'Английский язык': '🇬🇧',
+  'География': '🌍',
+  'Обществознание': '⚖️',
+  'Музыка': '🎵',
+  'ИЗО': '🎨',
+  'Технология': '🔧',
+};
+
+export const AVATARS_STUDENT = ['👨‍🎓', '👩‍🎓', '🧑‍🎓', '👨‍💻', '👩‍💻', '🧑‍💻', '🦊', '🐱', '🐼', '🦁'];
+export const AVATARS_TEACHER = ['👨‍🏫', '👩‍🏫', '🧑‍🏫', '📚', '🔬', '🧮', '🎓', '📝', '🌟', '🏆'];

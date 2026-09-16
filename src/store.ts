@@ -1,6 +1,6 @@
 import { AppData, User, Assignment, Submission } from './types';
 
-const STORAGE_KEY = 'hw-platform-data';
+const STORAGE_KEY = 'hw-platform-data-v2';
 
 const defaultData: AppData = {
   users: [
@@ -23,75 +23,90 @@ export function loadData(): AppData {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
       saveData(defaultData);
-      return defaultData;
+      return structuredClone(defaultData);
     }
     return JSON.parse(raw) as AppData;
   } catch {
-    return defaultData;
+    return structuredClone(defaultData);
   }
 }
 
-export function saveData(data: AppData): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+export function saveData(storeData: AppData): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(storeData));
+  } catch (e) {
+    console.error('Save failed:', e);
+  }
 }
 
 export function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
 }
 
-export function addUser(data: AppData, user: User): AppData {
-  const newData = { ...data, users: [...data.users, user] };
+export function addUser(storeData: AppData, user: User): AppData {
+  const newData = { ...storeData, users: [...storeData.users, user] };
   saveData(newData);
   return newData;
 }
 
-export function addAssignment(data: AppData, assignment: Assignment): AppData {
-  const newData = { ...data, assignments: [assignment, ...data.assignments] };
+export function addAssignment(storeData: AppData, assignment: Assignment): AppData {
+  const newData = { ...storeData, assignments: [assignment, ...storeData.assignments] };
   saveData(newData);
   return newData;
 }
 
-export function deleteAssignment(data: AppData, assignmentId: string): AppData {
+export function updateAssignment(storeData: AppData, assignmentId: string, updates: Partial<Assignment>): AppData {
   const newData = {
-    ...data,
-    assignments: data.assignments.filter(a => a.id !== assignmentId),
-    submissions: data.submissions.filter(s => s.assignmentId !== assignmentId),
+    ...storeData,
+    assignments: storeData.assignments.map(a => a.id === assignmentId ? { ...a, ...updates } : a),
   };
   saveData(newData);
   return newData;
 }
 
-export function addSubmission(data: AppData, submission: Submission): AppData {
-  const existing = data.submissions.findIndex(
+export function deleteAssignment(storeData: AppData, assignmentId: string): AppData {
+  const newData = {
+    ...storeData,
+    assignments: storeData.assignments.filter(a => a.id !== assignmentId),
+    submissions: storeData.submissions.filter(s => s.assignmentId !== assignmentId),
+  };
+  saveData(newData);
+  return newData;
+}
+
+export function addSubmission(storeData: AppData, submission: Submission): AppData {
+  const existing = storeData.submissions.findIndex(
     s => s.assignmentId === submission.assignmentId && s.studentId === submission.studentId
   );
   let newSubmissions: Submission[];
   if (existing >= 0) {
-    newSubmissions = [...data.submissions];
+    newSubmissions = [...storeData.submissions];
     newSubmissions[existing] = submission;
   } else {
-    newSubmissions = [...data.submissions, submission];
+    newSubmissions = [...storeData.submissions, submission];
   }
-  const newData = { ...data, submissions: newSubmissions };
+  const newData = { ...storeData, submissions: newSubmissions };
   saveData(newData);
   return newData;
 }
 
-export function updateSubmission(data: AppData, submissionId: string, updates: Partial<Submission>): AppData {
-  const newSubmissions = data.submissions.map(s =>
+export function updateSubmission(storeData: AppData, submissionId: string, updates: Partial<Submission>): AppData {
+  const newSubmissions = storeData.submissions.map(s =>
     s.id === submissionId ? { ...s, ...updates } : s
   );
-  const newData = { ...data, submissions: newSubmissions };
+  const newData = { ...storeData, submissions: newSubmissions };
   saveData(newData);
   return newData;
 }
 
-export function authenticate(data: AppData, studentNumber: string, password: string): User | null {
-  return data.users.find(u => u.studentNumber === studentNumber && u.password === password) || null;
+export function authenticate(storeData: AppData, studentNumber: string, password: string): User | null {
+  const trimmed = studentNumber.trim();
+  return storeData.users.find(u => u.studentNumber.trim() === trimmed && u.password === password) || null;
 }
 
-export function isNumberTaken(data: AppData, studentNumber: string): boolean {
-  return data.users.some(u => u.studentNumber === studentNumber);
+export function isNumberTaken(storeData: AppData, studentNumber: string, excludeId?: string): boolean {
+  const trimmed = studentNumber.trim();
+  return storeData.users.some(u => u.studentNumber.trim() === trimmed && u.id !== excludeId);
 }
 
 export function formatDate(timestamp: number): string {
@@ -105,7 +120,8 @@ export function formatDate(timestamp: number): string {
 }
 
 export function formatDueDate(dateStr: string): string {
-  const date = new Date(dateStr);
+  if (!dateStr) return '';
+  const date = new Date(dateStr + 'T00:00:00');
   return date.toLocaleDateString('ru-RU', {
     day: '2-digit',
     month: 'long',
@@ -114,7 +130,16 @@ export function formatDueDate(dateStr: string): string {
 }
 
 export function isOverdue(dueDate: string): boolean {
-  return new Date(dueDate) < new Date();
+  if (!dueDate) return false;
+  const due = new Date(dueDate + 'T23:59:59');
+  return due < new Date();
+}
+
+export function daysUntilDue(dueDate: string): number {
+  if (!dueDate) return -1;
+  const due = new Date(dueDate + 'T23:59:59');
+  const now = new Date();
+  return Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 }
 
 export function fileToDataUrl(file: File): Promise<string> {
