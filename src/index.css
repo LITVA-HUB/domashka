@@ -1,1 +1,148 @@
 @import "tailwindcss";
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #0a0a1a;
+  color: #ffffff;
+  overflow: hidden;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes food-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+@keyframes snake-appear {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+.animate-food-pulse {
+  animation: food-pulse 1s ease-in-out infinite;
+}
+
+.animate-snake-appear {
+  animation: snake-appear 0.2s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-out;
+}
+
+.game-grid {
+  display: grid;
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 
+    0 0 40px rgba(59, 130, 246, 0.1),
+    inset 0 0 60px rgba(0, 0, 0, 0.3);
+}
+
+.game-cell {
+  aspect-ratio: 1;
+  transition: background-color 0.1s ease;
+}
+
+.snake-head {
+  border-radius: 4px;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+}
+
+.snake-body {
+  border-radius: 3px;
+}
+
+.food-cell {
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(248, 113, 113, 0.7);
+}
+
+.btn-game {
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.btn-game:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+}
+
+.btn-game:active {
+  transform: translateY(0);
+}
+
+.difficulty-btn {
+  transition: all 0.2s ease;
+}
+
+.difficulty-btn.active {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+}
+
+.score-display {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.mobile-controls {
+  display: grid;
+  grid-template-areas:
+    ". up ."
+    "left . right"
+    ". down .";
+  gap: 8px;
+}
+
+.mobile-controls .btn-up { grid-area: up; }
+.mobile-controls .btn-down { grid-area: down; }
+.mobile-controls .btn-left { grid-area: left; }
+.mobile-controls .btn-right { grid-area: right; }
